@@ -2191,3 +2191,134 @@ int main()
 便可正確執行。
 
 在pow這個MACRO中，大括號裡表達式的值為最後一條陳述式的值，然後用小括號將大括號括起來就可以給其他變數賦值了。如果拿掉MACRO語句中的最外層小括號的話，會報錯。
+
+## Deque實作
+```c
+#include "stdio.h"
+#include "stdlib.h"
+#include "stdbool.h"
+
+typedef struct node node;
+struct node
+{
+	int val;
+	node *next;
+	node *prev;
+};
+
+struct deque
+{
+	node *front;
+	node *back;
+	size_t size;
+} deq = {.front = NULL, .back = NULL, .size = 0};
+
+bool isEmpty()
+{
+	return deq.size == 0;
+}
+
+void push(int data)
+{
+	node *new = (node *)malloc(sizeof(node));
+	new->val = data;
+	new->next = deq.front;
+	new->prev = NULL;
+	if(isEmpty())
+		deq.front = deq.back = new;
+	else
+	{
+		deq.front->prev = new;
+		deq.front = new;
+	}
+	++deq.size;
+}
+
+void inject(int data)
+{
+	node *new = (node *)malloc(sizeof(node));
+	new->val = data;
+	new->next = NULL;
+	new->prev = deq.back;
+	if(isEmpty())
+		deq.front = deq.back = new;
+	else
+	{
+		deq.back->next = new;
+		deq.back = new;
+	}
+	++deq.size;
+}
+
+void pop()
+{
+	if(!isEmpty())
+	{
+		node *tmp = deq.front;
+		deq.front = tmp->next;
+		deq.front->prev = NULL;
+		free(tmp);
+		--deq.size;
+	}
+}
+
+void eject()
+{
+	if(!isEmpty())
+	{
+		node *tmp = deq.back;
+		deq.back = tmp->prev;
+		deq.back->next = NULL;
+		free(tmp);
+		--deq.size;
+	}
+}
+
+void print_list()
+{
+	node *curr = deq.front;
+	while(curr)
+	{
+		printf("%d ", curr->val);
+		curr = curr->next;
+	}
+	printf("\n");
+}
+
+void print_revlist()
+{
+	node *curr = deq.back;
+	while(curr)
+	{
+		printf("%d ", curr->val);
+		curr = curr->prev;
+	}
+	printf("\n");
+}
+
+void free_list()
+{
+	node *tmp;
+	node * curr = deq.front;
+	while(curr)
+	{
+		tmp = curr;
+		curr = curr->next;
+		free(tmp);
+	}
+}
+
+int main(void) {
+	push(123);
+	push(456);
+	inject(789);
+	inject(500);
+	print_list();
+	print_revlist();
+	pop();
+	eject();
+	print_list();
+	free_list();
+	return 0;
+}
+```
